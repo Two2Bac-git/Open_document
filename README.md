@@ -21,6 +21,14 @@ O relatório vai para o [Agent Index](https://aiworthusing.com/agent-index): **s
 | Agente Haiku | `.claude/agents/plow-organizador.md` | Roda plan, espera sua confirmação, roda apply |
 | Agente Sonnet | `.claude/agents/plow-reparador.md` | directory-open + propõe reparo para links ambíguos |
 
+## Contêiner (Docker ou Podman)
+```sh
+PLOW_PASTA=~/Downloads docker compose up -d --build        # sobe; nunca move nada sozinho
+docker compose exec plow-agent python3 plow.py plan ~/Downloads    # veja
+docker compose exec plow-agent python3 plow.py apply ~/Downloads   # faça
+PLOW_AGENT_TOKEN=$(cat ~/.config/plow/token) docker compose up -d  # liga o Agent Index
+```
+
 ## Regras de segurança
 - Só pastas visíveis dentro do home. Recusa: ocultas, sistema/app, o próprio home, e qualquer pasta dentro de repositório git (inclusive via symlink).
 - Symlink: move o link, nunca o alvo; links relativos são reescritos.

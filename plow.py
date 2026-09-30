@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 HOME = Path.home()
-LOG = Path(__file__).resolve().parent / "plow.log"
+LOG = Path(os.environ.get("PLOW_LOG", Path(__file__).resolve().parent / "plow.log"))
 # Pastas de sistema/apps dentro do home que nunca viram raiz.
 PROIBIDAS = {"snap", "Applications", "go", "bin", "lib", "node_modules"}
 POR_TIPO = {"image": "Imagens", "video": "Videos", "audio": "Audios", "text": "Documentos"}

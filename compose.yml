@@ -1,0 +1,18 @@
+services:
+  plow-agent:
+    build: .
+    image: plow-agent:local
+    restart: unless-stopped
+    environment:
+      AGENT_ID: plow-agent
+      PLOW_AGENT_TOKEN: ${PLOW_AGENT_TOKEN:-}
+    security_opt:
+      - label=disable   # SELinux: acessa a pasta montada sem reetiquetar seus arquivos
+    volumes:
+      - plow-estado:/home/plow/.plow
+      - plow-index:/home/plow/.agent-index
+      - ${PLOW_PASTA:-~/Downloads}:/home/plow/Downloads
+
+volumes:
+  plow-estado:
+  plow-index:

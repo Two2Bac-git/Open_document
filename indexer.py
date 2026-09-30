@@ -5,6 +5,7 @@ Uso:
   indexer.py            indexa uma vez
   indexer.py --watch    fica em 2º plano, reindexando a cada 10 s
 """
+import os
 import re
 import sqlite3
 import sys
@@ -13,7 +14,7 @@ from pathlib import Path
 
 import plow
 
-DB = Path.home() / ".plow-agent.db"
+DB = Path(os.environ.get("PLOW_DB", Path.home() / ".plow-agent.db"))
 LINHA = re.compile(r"^(\S+ \S+) (\[simulação\] )?(\S+) (.*)$")
 
 
