@@ -1,5 +1,7 @@
 # Open to CC
 
+![Open to CC sorting a Downloads folder, repairing a broken link and refusing a hidden folder](assets/demo.png)
+
 Sorts your folders by file metadata — it never reads file content. Every action has a dry-run first.
 
 > A 100% customizable repo within the rules of the game ;) — that's how GitHub works. Your folders end up the way that best defines your directory, without breaking symlinks. Updates from me and from others are welcome, with care: Andrey Bacelar
