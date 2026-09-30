@@ -22,7 +22,8 @@ registry_digest() {  # anonymous read, so it also proves the package is public
 
 [ -z "$(registry_digest "$VERSION")" ] || { echo "$IMAGE:$VERSION already exists; pick a new version." >&2; exit 1; }
 
-BUILDAH_FORMAT=docker "$DOCKER" build \
+# --no-cache: a cached build silently kept VERSION=dev / REVISION=unknown in v4 and v5
+BUILDAH_FORMAT=docker "$DOCKER" build --no-cache \
   --build-arg VERSION="$VERSION" --build-arg REVISION="$(git rev-parse HEAD)" -t "$IMAGE:$VERSION" .
 "$DOCKER" push "$IMAGE:$VERSION"
 
