@@ -2,6 +2,17 @@
 
 Organizador de arquivos por metadados — nunca lê o conteúdo. Tudo tem simulação antes.
 
+> Repo 100% customizável dentro das regras do jogo ;) — é assim que o GitHub funciona. Suas pastas ficam do jeito que mais define o seu diretório, sem quebrar symlinks. Atualizações minhas e de terceiros são bem-vindas, com carinho: Andrey Bacelar
+
+## Instalar
+```sh
+git clone https://github.com/Two2Bac-git/Open_document.git plow-agent && cd plow-agent
+# conta Plow (o código chega por SMS): https://github.com/plow-pbc/plow-agents
+plow-agents login
+./install.sh     # registra esta instalação no Agent Index e reporta uso a cada 5 min
+```
+O relatório vai para o [Agent Index](https://aiworthusing.com/agent-index): **só contagem de tokens por dia e modelo** — nada de prompts, textos ou caminhos. Parar: `systemctl --user disable --now plow-agent-index.timer`.
+
 | Bloco | Arquivo | O que faz |
 |---|---|---|
 | Organizar | `plow.py plan\|apply <pasta>` | Move arquivos soltos para `<pasta>/Imagens`, `Documentos`, `Videos`... |
