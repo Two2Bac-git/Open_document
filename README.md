@@ -51,6 +51,8 @@ Prebuilt: `ghcr.io/two2bac-git/plow-agent`. The image only builds if the self-ch
 
 ## Releasing
 ```sh
+# install from scratch like a visitor would (Python 3.9, 3.12, Ubuntu...); see the header of cleanroom.sh
+podman run --rm -v "$PWD/cleanroom.sh:/c.sh:ro" python:3.9-slim sh -c "apt-get update -qq; apt-get install -y -qq git >/dev/null; sh /c.sh"
 ./release.sh v2      # refuses dirty trees, unpushed commits and existing tags; prints the digest
 ```
 
