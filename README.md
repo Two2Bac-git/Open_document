@@ -1,6 +1,6 @@
 # Open to CC
 
-![Open to CC sorting a Downloads folder, repairing a broken link and refusing a hidden folder](assets/demo.png)
+![Open to CC: a Downloads folder before and after, shortcut still opening](assets/agent-index/before-after.png)
 
 A [Plow](https://aiworthusing.com/agent-index/plow-agent) agent you text: it sorts a folder on your computer into subfolders by file type and repairs broken shortcuts — from names and types only, never reading a file's content. It always shows the plan first and changes nothing until you say yes.
 
