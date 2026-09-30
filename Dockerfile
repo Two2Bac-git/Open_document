@@ -2,7 +2,7 @@
 FROM python:3.12-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
 ARG VERSION=dev
 ARG REVISION=unknown
-LABEL org.opencontainers.image.title="Plow-Agent" \
+LABEL org.opencontainers.image.title="Open to CC" \
       org.opencontainers.image.description="Sorts loose files by metadata and repairs broken symlinks, never reading file content." \
       org.opencontainers.image.source="https://github.com/Two2Bac-git/Open_document" \
       org.opencontainers.image.licenses="MIT" \

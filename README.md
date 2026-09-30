@@ -1,4 +1,4 @@
-# Plow-Agent
+# Open to CC
 
 Sorts your folders by file metadata — it never reads file content. Every action has a dry-run first.
 

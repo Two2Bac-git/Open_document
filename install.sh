@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs Plow-Agent's usage reporting on this machine: registers this install on the
+# Installs Open to CC's usage reporting on this machine: registers this install on the
 # Agent Index and reports token usage (per day and model) every 5 minutes.
 # First: `plow-agents login` (https://github.com/plow-pbc/plow-agents).
 set -euo pipefail
@@ -30,20 +30,24 @@ esac
 
 UNIT="$HOME/.config/systemd/user"
 mkdir -p "$UNIT"
+# Usage counts from the first install day; a re-install keeps that day. Override: PLOW_SINCE=YYYY-MM-DD
+SINCE="${PLOW_SINCE:-$(sed -n 's/^Environment=PLOW_SINCE=//p' "$UNIT/plow-agent-index.service" 2>/dev/null || true)}"
+SINCE="${SINCE:-$(date +%F)}"
 cat > "$UNIT/plow-agent-index.service" <<EOF
 [Unit]
-Description=Plow-Agent: report usage to the Agent Index
+Description=Open to CC: report usage to the Agent Index
 
 [Service]
 Type=oneshot
 Environment=AGENTSVIEW_NO_DAEMON=1
+Environment=PLOW_SINCE=$SINCE
 # agentsview answers from its own database and fills it only on sync (as Plow's boot does)
 ExecStartPre=-/bin/sh -c '[ -x "$AV" ] && "$AV" sync >/dev/null'
 ExecStart=/usr/bin/env python3 $DIR/report.py --agent plow-agent
 EOF
 cat > "$UNIT/plow-agent-index.timer" <<EOF
 [Unit]
-Description=Plow-Agent: usage report every 5 minutes
+Description=Open to CC: usage report every 5 minutes
 
 [Timer]
 OnBootSec=1min

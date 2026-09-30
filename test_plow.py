@@ -127,6 +127,16 @@ def test_openclaw_skipped_only_when_counted_twice():
         assert not report.openclaw_counted_twice(home), "agentsview alone does not see OpenClaw"
 
 
+def test_count_from_zeroes_only_earlier_days():
+    import report
+    row = {"model": "m", "input": 5, "output": 6, "cache_read": 7, "cache_write": 8}
+    days = [{"date": "2026-09-28", "models": [row]}, {"date": "2026-09-29", "models": [row]}]
+    out = report.count_from(days, "2026-09-29")
+    assert out[0]["models"] == [{"model": "m", "input": 0, "output": 0, "cache_read": 0, "cache_write": 0}]
+    assert out[1] == days[1], "the start day itself must be kept"
+    assert row["input"] == 5, "input rows mutated"
+
+
 if __name__ == "__main__":
     for name, f in list(globals().items()):
         if name.startswith("test_"):

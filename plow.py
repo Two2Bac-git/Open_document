@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plow-Agent: sorts loose files by metadata (name/extension) and never reads their content.
+"""Open to CC: sorts loose files by metadata (name/extension) and never reads their content.
 
 Usage:
   plow.py plan <folder>...                       show what would happen; touches nothing

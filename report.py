@@ -22,8 +22,21 @@ def openclaw_counted_twice(home: str) -> bool:
     return has_agentsview and bool(glob.glob(os.path.join(home, ".claude", "projects", "*openclaw*")))
 
 
+def count_from(days: list, since: str) -> list:
+    """Days before `since` (the install date) go out as zeros. The server replaces each
+    (day, model) it receives, so this clears the machine's usage from before the agent
+    existed instead of leaving it on the board until it ages out."""
+    zero = dict.fromkeys(client.KEYS, 0)
+    return [d if d["date"] >= since else {"date": d["date"], "models": [{**m, **zero} for m in d["models"]]}
+            for d in days]
+
+
 if __name__ == "__main__":
     if openclaw_counted_twice(os.path.expanduser("~")):
         print("  openclaw store skipped: its turns are already in agentsview's Claude Code count")
         client.from_openclaw = lambda days, state=None: {}
+    if since := os.environ.get("PLOW_SINCE"):
+        print(f"  counting from {since}; earlier days are sent as zero")
+        merge = client.merge
+        client.merge = lambda *sources: count_from(merge(*sources), since)
     sys.exit(client.main(sys.argv[1:]))
