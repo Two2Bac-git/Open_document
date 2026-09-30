@@ -146,34 +146,6 @@ def test_remote_survey_plan_apply_roundtrip():
         assert plow.plan_survey(plow.read_survey(sh(plow.survey_cmd("~/Nope"))))[0] == "not a folder"
 
 
-def test_openclaw_skipped_only_when_counted_twice():
-    import report
-    report.AGENTSVIEW = ("~/.local/bin/agentsview",)  # ignore system-wide installs (Plow's base has one)
-    with tempfile.TemporaryDirectory() as home:
-        projects = Path(home, ".claude", "projects")
-        projects.mkdir(parents=True)
-        assert not report.openclaw_counted_twice(home), "empty machine"
-        (projects / "-home-u--openclaw-workspace-coordinator").mkdir()
-        assert not report.openclaw_counted_twice(home), "no agentsview: OpenClaw store is the only count"
-        exe = Path(home, ".local", "bin", "agentsview")
-        exe.parent.mkdir(parents=True)
-        exe.write_text("#!/bin/sh\n")
-        exe.chmod(0o755)
-        assert report.openclaw_counted_twice(home)
-        (projects / "-home-u--openclaw-workspace-coordinator").rmdir()
-        assert not report.openclaw_counted_twice(home), "agentsview alone does not see OpenClaw"
-
-
-def test_count_from_zeroes_only_earlier_days():
-    import report
-    row = {"model": "m", "input": 5, "output": 6, "cache_read": 7, "cache_write": 8}
-    days = [{"date": "2026-09-28", "models": [row]}, {"date": "2026-09-29", "models": [row]}]
-    out = report.count_from(days, "2026-09-29")
-    assert out[0]["models"] == [{"model": "m", "input": 0, "output": 0, "cache_read": 0, "cache_write": 0}]
-    assert out[1] == days[1], "the start day itself must be kept"
-    assert row["input"] == 5, "input rows mutated"
-
-
 if __name__ == "__main__":
     for name, f in list(globals().items()):
         if name.startswith("test_"):

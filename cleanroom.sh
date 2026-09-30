@@ -16,6 +16,3 @@ step "plan ~/Downloads"     python3 plow.py plan ~/Downloads
 step "apply ~/Downloads"    python3 plow.py apply ~/Downloads
 step "result in place"      test -e ~/Downloads/Documents/a.pdf -o -e ~/Downloads/Documentos/a.pdf
 step "refusal exits non-zero" sh -c "! python3 plow.py plan ~/.hidden-x"
-step "./install.sh without a terminal stops early" sh -c "! ./install.sh"
-step "nothing downloaded before login" sh -c "test ! -e ~/.local/bin/agentsview && test ! -e ~/.local/share/plow-agents"
-echo "systemctl --user: $(systemctl --user is-system-running 2>&1 | head -1)"

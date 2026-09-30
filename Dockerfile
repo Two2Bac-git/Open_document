@@ -5,7 +5,7 @@ ARG BASE_IMAGE=public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-771198a9609dcef54d
 
 # The image only exists if the self-check passes (on the base's own python3).
 FROM ${BASE_IMAGE} AS check
-COPY plow.py indexer.py report.py agent_index_client.py test_plow.py /tmp/check/
+COPY plow.py indexer.py test_plow.py /tmp/check/
 RUN cd /tmp/check && PYTHONDONTWRITEBYTECODE=1 python3 test_plow.py >/dev/null
 
 FROM ${BASE_IMAGE}

@@ -52,7 +52,7 @@ python3 test_plow.py                    # self-check (temp folder only)
 python3 plow.py plan ~/Downloads        # look
 python3 plow.py apply ~/Downloads       # do it
 ```
-`.claude/agents/` holds the same two roles for Claude Code (Haiku sorts, Sonnet repairs). `./install.sh` reports that local usage to the Agent Index (Plow account, Python 3.11+); it installs [agentsview](https://github.com/kenn-io/agentsview) at Plow's pinned version and reports through `report.py`, which never counts OpenClaw turns twice. Only token counts per day and model are sent.
+`.claude/agents/` holds the same two roles for Claude Code (Haiku sorts, Sonnet repairs). Usage reporting to the Agent Index is done by the deployed agent itself (Plow's base image); this repo ships no reporting code of its own.
 
 ## Safety rules
 - Only visible folders inside HOME. Refused: hidden folders, system/app folders, HOME itself, and anything inside a git repository (symlinks included).
@@ -67,4 +67,4 @@ podman run --rm -v "$PWD/cleanroom.sh:/c.sh:ro" python:3.9-slim sh -c "apt-get u
 ```
 
 ## License
-MIT. `agent_index_client.py` is © The Plow Collective, Apache-2.0 (`LICENSE-APACHE`), redistributed unchanged.
+MIT, every file in this repository. The image is built `FROM` Plow's base image, which keeps its own license and is not redistributed here.
