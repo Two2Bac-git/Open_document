@@ -80,6 +80,8 @@ def test_refusals():
         assert plow.refusal(tmp / ".hidden")
         assert plow.refusal(tmp / "snap")
         assert plow.refusal(tmp), "HOME itself passed"
+        plow.LOG = tmp / "plow.log"
+        assert plow.main(["plan", str(tmp / ".hidden")]) == 1, "a refusal must not exit 0"
         (tmp / "Free").mkdir()
         assert plow.refusal(tmp / "Free") is None
 

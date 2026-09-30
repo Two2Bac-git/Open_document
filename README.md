@@ -17,18 +17,21 @@ Sorts your folders by file metadata — it never reads file content. Every actio
 Category folders follow your system: the XDG names it already uses (`~/.config/user-dirs.dirs`), otherwise your `LANG` (English and Portuguese built in).
 
 ## Install
+
+**1. Use it** — Python 3.9+ and git, no account (Linux and macOS):
 ```sh
-git clone https://github.com/Two2Bac-git/Open_document.git plow-agent && cd plow-agent
+git clone https://github.com/Two2Bac-git/Open_document.git open-to-cc && cd open-to-cc
 python3 test_plow.py                    # self-check (temp folder only)
 python3 plow.py plan ~/Downloads        # look
 python3 plow.py apply ~/Downloads       # do it
 ```
 
-### Usage reporting (Agent Index)
+**2. Count it on the [Agent Index](https://aiworthusing.com/agent-index/plow-agent)** — one command, needs Python 3.11+ and a phone:
 ```sh
-plow-agents login    # Plow account, code arrives by SMS: https://github.com/plow-pbc/plow-agents
-./install.sh         # registers this install and reports usage every 5 min
+./install.sh
 ```
+It walks you through a free Plow account (it prints a short code; you text it to Plow's US number and keep the window open), registers this install, and reports usage every 5 minutes — via `systemd --user`, or it prints a `crontab` line where there is none (macOS, WSL). Nothing is downloaded or registered before the login succeeds. Re-running it is safe.
+
 It installs [agentsview](https://github.com/kenn-io/agentsview) v0.44.0 (same version and checksum as Plow's OpenClaw image) so Claude Code usage is counted, and reports through `report.py`, which runs Plow's client unchanged but skips its OpenClaw-store reader when agentsview already counts those turns (OpenClaw on top of Claude Code), so nothing is counted twice.
 
 Only token counts per day and model are sent to the [Agent Index](https://aiworthusing.com/agent-index/plow-agent) — no prompts, text or paths. Stop: `systemctl --user disable --now plow-agent-index.timer`.

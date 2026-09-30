@@ -6,6 +6,8 @@ Usage:
   plow.py apply <folder>...                      move loose files into <folder>/<Category>/
   plow.py directory-open [--apply] <folder>...   find broken symlinks; --apply repairs them
 """
+from __future__ import annotations  # `Path | None` hints on Python 3.9 (macOS's stock python3)
+
 import mimetypes
 import os
 import re
@@ -159,22 +161,23 @@ def main(argv):
         return 2
     cmd, *rest = argv
     apply = cmd == "apply" or "--apply" in rest
-    roots = []
+    roots, refused = [], False
     for arg in (a for a in rest if a != "--apply"):
         root = Path(arg).expanduser()
         if reason := refusal(root):
             log(f"REFUSED {root}: {reason}")
+            refused = True
         else:
             roots.append(root)
     if cmd == "directory-open":
         directory_open(roots, apply)
-        return 0
-    for root in roots:
-        for src, dst in plan(root):
-            log(f"MOVE {src} -> {dst}", not apply)
-            if apply:
-                move(src, dst)
-    return 0
+    else:
+        for root in roots:
+            for src, dst in plan(root):
+                log(f"MOVE {src} -> {dst}", not apply)
+                if apply:
+                    move(src, dst)
+    return 1 if refused else 0  # the other folders still ran; the exit code says one was skipped
 
 
 if __name__ == "__main__":
