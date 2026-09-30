@@ -1,19 +1,13 @@
+# Local run, the same way Plow's OpenClaw base does it:
+#   plow-agents lines                 # pick a free line
+#   plow-agents mint <LINE_UID>       # writes ./plow-credentials (never commit it)
+#   docker compose up --build         # then text the line's number
 services:
-  plow-agent:
+  agent:
     build: .
-    image: plow-agent:local
-    restart: unless-stopped
-    environment:
-      LANG: ${LANG:-en_US.UTF-8}   # folder names follow the host language
-    security_opt:
-      - label=disable   # SELinux (Fedora/RHEL): read the mounted folder without relabeling your files
-    healthcheck:
-      test: ["CMD-SHELL", "kill -0 \"$(cat /tmp/indexer.pid)\""]
-      interval: 60s
-      timeout: 5s
+    env_file: ./plow-credentials
     volumes:
-      - plow-state:/home/plow/.plow
-      - ${PLOW_FOLDER:-./Downloads}:/home/plow/Downloads
-
+      - state:/var/lib/plow
+    stop_grace_period: 35s
 volumes:
-  plow-state:
+  state:

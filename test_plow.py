@@ -112,8 +112,43 @@ def test_directory_open_and_indexer():
         assert indexer.index(tmp / "old.log", db) == 1
 
 
+def test_remote_survey_plan_apply_roundtrip():
+    """The deployed agent's path: survey on the owner's machine, plan in the cloud, script back."""
+    import subprocess
+    with tempfile.TemporaryDirectory() as t:
+        home = Path(t, "home")
+        dl = home / "Downloads"
+        (dl / "Documents").mkdir(parents=True)
+        (dl / "Documents" / "note.pdf").write_text("old")
+        for name in ("note.pdf", "photo.jpg", "it's a clip.mp4"):
+            (dl / name).write_text("x")
+        (home / "target.txt").write_text("target")
+        os.symlink("../target.txt", dl / "shortcut.txt")
+        os.symlink("Gone/x.txt", dl / "broken.txt")
+        env = {**os.environ, "HOME": str(home)}
+        sh = lambda script: subprocess.run(["sh", "-c", script], env=env, capture_output=True, text=True).stdout
+        s = plow.read_survey(sh(plow.survey_cmd("~/Downloads")))
+        s["os"] = "Darwin"  # exercise the macOS folder names
+        reason, moves = plow.plan_survey(s)
+        assert reason is None
+        got = {src: dst for src, dst, _, _ in moves}
+        assert got["note.pdf"] == "Documents/note (1).pdf", "collision with an existing file"
+        assert got["it's a clip.mp4"] == "Movies/it's a clip.mp4"
+        assert "broken.txt" not in got and "Documents" not in got
+        out = sh(plow.apply_script(s["real"], moves))
+        assert out.count("MOVED") == 4, out
+        assert (dl / "Documents" / "note.pdf").read_text() == "old"
+        assert (dl / "Movies" / "it's a clip.mp4").exists()
+        assert (dl / "Documents" / "shortcut.txt").read_text() == "target", "relative link broke"
+        assert (dl / "broken.txt").is_symlink(), "broken link was moved"
+        (home / "Repo" / ".git").mkdir(parents=True)
+        assert plow.plan_survey(plow.read_survey(sh(plow.survey_cmd("~/Repo"))))[0] == "inside a git repository"
+        assert plow.plan_survey(plow.read_survey(sh(plow.survey_cmd("~/Nope"))))[0] == "not a folder"
+
+
 def test_openclaw_skipped_only_when_counted_twice():
     import report
+    report.AGENTSVIEW = ("~/.local/bin/agentsview",)  # ignore system-wide installs (Plow's base has one)
     with tempfile.TemporaryDirectory() as home:
         projects = Path(home, ".claude", "projects")
         projects.mkdir(parents=True)

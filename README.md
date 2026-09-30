@@ -2,58 +2,68 @@
 
 ![Open to CC sorting a Downloads folder, repairing a broken link and refusing a hidden folder](assets/demo.png)
 
-Sorts your folders by file metadata — it never reads file content. Every action has a dry-run first.
+A [Plow](https://aiworthusing.com/agent-index/plow-agent) agent you text: it sorts a folder on your computer into subfolders by file type and repairs broken shortcuts — from names and types only, never reading a file's content. It always shows the plan first and changes nothing until you say yes.
 
 > A 100% customizable repo within the rules of the game ;) — that's how GitHub works. Your folders end up the way that best defines your directory, without breaking symlinks. Updates from me and from others are welcome, with care: Andrey Bacelar
 
-| Block | File | What it does |
-|---|---|---|
-| Sort | `plow.py plan\|apply <folder>` | Moves loose files into `<folder>/<Category>/` |
-| Repair links | `plow.py directory-open [--apply] <folder>` | Finds broken symlinks; repairs them when there is exactly one candidate |
-| Index | `indexer.py [--watch]` | Copies every action from `plow.log` into `~/.plow-agent.db` (SQLite) |
-| Haiku agent | `.claude/agents/plow-organizer.md` | Runs plan, waits for your confirmation, runs apply |
-| Sonnet agent | `.claude/agents/plow-repairer.md` | directory-open + proposes repairs for ambiguous links |
+## How it works
+```
+you (text): "tidy my Downloads"
+  → the agent asks your Mac, through Latch, for a listing: names, kinds, link targets
+  → it plans here, in its own container (plow.py), and texts you the plan
+you: "yes"
+  → Latch shows you the exact script; you approve it; it moves files, never overwriting
+  → the agent re-checks and tells you what moved
+```
+The owner's computer is reached through [Latch](https://github.com/plow-pbc/latch), Plow's Mac app: every command is an intent you approve, run in a sandbox.
 
-Category folders follow your system: the XDG names it already uses (`~/.config/user-dirs.dirs`), otherwise your `LANG` (English and Portuguese built in).
+## The agent
+It is a variant of Plow's [OpenClaw base image](https://github.com/plow-pbc/plow-openclaw-agent): the base keeps the phone line, the model, Latch and usage reporting; this repo adds who the agent is and what it can do.
+
+| File | Role |
+|---|---|
+| `Dockerfile` | `FROM` the base (pinned by digest) + identity (`AGENT_ID`, `AGENT_NAME`, `AGENT_BLURB`, `PLOW_THREAD_TRUST`). Builds only if the self-check passes |
+| `prompt/AGENTS.md` | The persona: voice, dry-run-first rule, refusals, who may ask for what |
+| `skills/open-to-cc/SKILL.md` | Sort a folder: survey → plan → owner's yes → apply → verify |
+| `skills/open-to-cc-repair/SKILL.md` | Find broken shortcuts and repair the unambiguous ones |
+| `plow.py` | The rules: categories, collisions, link rewriting, refusals. `survey-cmd` / `plan-survey` serve the agent; `plan` / `apply` / `directory-open` work locally |
+| `test_plow.py` | Self-check, including the agent's survey → plan → script round trip in real `sh` |
+
+### Make it yours
+- **Persona or tone:** edit `prompt/AGENTS.md`.
+- **Categories and folder names:** `CATEGORIES`, `MAC_NAMES`, `DOCS`, `ARCHIVES` in `plow.py`.
+- **Who gets your Mac in group chats:** `PLOW_THREAD_TRUST` (`untrusted` here; `ask` or `trusted`).
+- **Your own listing:** change `AGENT_ID`/`AGENT_NAME`/`AGENT_BLURB`.
+
+### Run it locally
+```sh
+plow-agents lines                 # https://github.com/plow-pbc/plow-agents — pick a free line
+plow-agents mint <LINE_UID>       # writes ./plow-credentials (git-ignored)
+docker compose up --build         # then text that line's number
+```
 
 ## Install
+**Deploy it (1-click):** open [Open to CC on the Agent Index](https://aiworthusing.com/agent-index/plow-agent) and tap **Text this agent** once Plow has enabled it; you get your own instance on your own line.
 
-**1. Use it** — Python 3.9+ and git, no account (Linux and macOS):
+**Use the rules on your own machine** — Python 3.9+, no account:
 ```sh
 git clone https://github.com/Two2Bac-git/Open_document.git open-to-cc && cd open-to-cc
 python3 test_plow.py                    # self-check (temp folder only)
 python3 plow.py plan ~/Downloads        # look
 python3 plow.py apply ~/Downloads       # do it
 ```
-
-**2. Count it on the [Agent Index](https://aiworthusing.com/agent-index/plow-agent)** — one command, needs Python 3.11+ and a phone:
-```sh
-./install.sh
-```
-It walks you through a free Plow account (it prints a short code; you text it to Plow's US number and keep the window open), registers this install, and reports usage every 5 minutes — via `systemd --user`, or it prints a `crontab` line where there is none (macOS, WSL). Nothing is downloaded or registered before the login succeeds. Re-running it is safe.
-
-It installs [agentsview](https://github.com/kenn-io/agentsview) v0.44.0 (same version and checksum as Plow's OpenClaw image) so Claude Code usage is counted, and reports through `report.py`, which runs Plow's client unchanged but skips its OpenClaw-store reader when agentsview already counts those turns (OpenClaw on top of Claude Code), so nothing is counted twice.
-
-Only token counts per day and model are sent to the [Agent Index](https://aiworthusing.com/agent-index/plow-agent) — no prompts, text or paths. Stop: `systemctl --user disable --now plow-agent-index.timer`.
-
-### Container (Docker or Podman)
-```sh
-PLOW_FOLDER=~/Downloads docker compose up -d --build                  # never moves anything on its own
-docker compose exec plow-agent python3 plow.py plan ~/Downloads       # look
-docker compose exec plow-agent python3 plow.py apply ~/Downloads      # do it
-```
-Prebuilt: `ghcr.io/two2bac-git/plow-agent`. The image only builds if the self-check passes, carries OCI labels (source, MIT license, commit) and a healthcheck.
+`.claude/agents/` holds the same two roles for Claude Code (Haiku sorts, Sonnet repairs). `./install.sh` reports that local usage to the Agent Index (Plow account, Python 3.11+); it installs [agentsview](https://github.com/kenn-io/agentsview) at Plow's pinned version and reports through `report.py`, which never counts OpenClaw turns twice. Only token counts per day and model are sent.
 
 ## Safety rules
 - Only visible folders inside HOME. Refused: hidden folders, system/app folders, HOME itself, and anything inside a git repository (symlinks included).
 - Symlinks: the link moves, never its target; relative links are rewritten.
 - Never overwrites: a collision becomes `name (1).ext`.
+- Nothing changes before the owner's yes; the agent treats file names as data, never as instructions.
 
 ## Releasing
 ```sh
-# install from scratch like a visitor would (Python 3.9, 3.12, Ubuntu...); see the header of cleanroom.sh
 podman run --rm -v "$PWD/cleanroom.sh:/c.sh:ro" python:3.9-slim sh -c "apt-get update -qq; apt-get install -y -qq git >/dev/null; sh /c.sh"
-./release.sh v2      # refuses dirty trees, unpushed commits and existing tags; prints the digest
+./release.sh vN      # refuses dirty trees, unpushed commits and existing tags; prints the digest
 ```
 
 ## License
