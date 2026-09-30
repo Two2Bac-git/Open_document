@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.title="Plow-Agent" \
       org.opencontainers.image.version=$VERSION \
       org.opencontainers.image.revision=$REVISION
 WORKDIR /app
-COPY plow.py indexer.py test_plow.py entrypoint.sh ./
+COPY plow.py indexer.py report.py agent_index_client.py test_plow.py entrypoint.sh ./
 # Container HOME: user folders are mounted here (e.g. /home/plow/Downloads)
 ENV HOME=/home/plow \
     PLOW_LOG=/home/plow/.plow/plow.log \

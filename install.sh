@@ -7,6 +7,18 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 CLIENT="$DIR/agent_index_client.py"
 TOKEN_FILE="${PLOW_TOKEN_FILE:-$HOME/.config/plow/token}"
 
+# agentsview: the collector Plow's own OpenClaw image installs, same version and checksum
+# (plow-pbc/plow-openclaw-agent Dockerfile). It is what sees Claude Code usage.
+AV="$HOME/.local/bin/agentsview"
+if [ ! -x "$AV" ] && [ "$(uname -sm)" = "Linux x86_64" ]; then
+  tmp="$(mktemp)"
+  curl -fsS --max-time 120 -L -o "$tmp" \
+    https://github.com/kenn-io/agentsview/releases/download/v0.44.0/agentsview_0.44.0_linux_amd64.tar.gz
+  echo "037ea7a46d52e06b20363b4aa7cd7f28e32f31d8215803d6e9a0c96bac5818e3  $tmp" | sha256sum -c - >/dev/null
+  mkdir -p "$(dirname "$AV")" && tar -xzf "$tmp" -C "$(dirname "$AV")" agentsview && rm "$tmp"
+  echo "Installed agentsview v0.44.0 (checksum verified)."
+fi
+
 set +e; python3 "$CLIENT" status >/dev/null; st=$?; set -e
 case $st in
   0) echo "This install is already registered." ;;
@@ -24,7 +36,10 @@ Description=Plow-Agent: report usage to the Agent Index
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/env python3 $CLIENT --agent plow-agent
+Environment=AGENTSVIEW_NO_DAEMON=1
+# agentsview answers from its own database and fills it only on sync (as Plow's boot does)
+ExecStartPre=-/bin/sh -c '[ -x "$AV" ] && "$AV" sync >/dev/null'
+ExecStart=/usr/bin/env python3 $DIR/report.py --agent plow-agent
 EOF
 cat > "$UNIT/plow-agent-index.timer" <<EOF
 [Unit]

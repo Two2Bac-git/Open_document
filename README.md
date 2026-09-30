@@ -27,6 +27,8 @@ python3 plow.py apply ~/Downloads       # do it
 plow-agents login    # Plow account, code arrives by SMS: https://github.com/plow-pbc/plow-agents
 ./install.sh         # registers this install and reports usage every 5 min
 ```
+It installs [agentsview](https://github.com/kenn-io/agentsview) v0.44.0 (same version and checksum as Plow's OpenClaw image) so Claude Code usage is counted, and reports through `report.py`, which runs Plow's client unchanged but skips its OpenClaw-store reader when agentsview already counts those turns (OpenClaw on top of Claude Code), so nothing is counted twice.
+
 Only token counts per day and model are sent to the [Agent Index](https://aiworthusing.com/agent-index/plow-agent) — no prompts, text or paths. Stop: `systemctl --user disable --now plow-agent-index.timer`.
 
 ### Container (Docker or Podman)
